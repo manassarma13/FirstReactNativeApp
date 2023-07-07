@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "161720885311",
+    "project_id": "rnotpsecurity",
+    "storage_bucket": "rnotpsecurity.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161720885311:android:8034c5eb5200db3918188a",
+        "android_client_info": {
+          "package_name": "com.otpsecurityapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "161720885311-k3gljjotr9o9jvgl9bsqdvulpnm34v81.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzC2ZB8yNWEge_oUYi5GuMBsnr11D7j5g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "161720885311-k3gljjotr9o9jvgl9bsqdvulpnm34v81.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
