@@ -50,7 +50,7 @@ const Login = () => {
         await AsyncStorage.setItem('NAME', name);
         await AsyncStorage.setItem('EMAIL', email);
         await AsyncStorage.setItem('USERID', userId);
-        navigation.navigate('Main');
+        navigation.navigate('UserMain');
     };
     return (
         <View style={styles.container}>
