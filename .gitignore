@@ -33,6 +33,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+android/app/build.gradle
 
 # node.js
 #
@@ -51,6 +52,8 @@ yarn-error.log
 **/fastlane/Preview.html
 **/fastlane/screenshots
 **/fastlane/test_output
+
+**/
 
 # Bundle artifact
 *.jsbundle
