@@ -28,12 +28,13 @@ const Login = () => {
             .then(res => {
                 setVisible(false);
                 if (!res.empty) {
-                    console.log('User found! Awesome vibes!');
+                    console.log('User found!');
                     const userData = res.docs[0].data();
                     goToNext(
-                        res.docs[0].data().name,
-                        res.docs[0].data().email,
-                        res.docs[0].data().userId,
+                        userData.name,
+                        userData.email,
+                        userData.userId,
+                        userData.userType
                     );
                 } else {
                     Alert.alert('User not found. Bummer, dude!');
@@ -42,16 +43,22 @@ const Login = () => {
             .catch(error => {
                 setVisible(false);
                 console.log(error);
-                Alert.alert('Oops! An error occurred. Better luck next time!');
+                Alert.alert('Oops! An error occurred. Try Again!');
             });
-
     };
-    const goToNext = async (name, email, userId) => {
+
+    const goToNext = async (name, email, userId, userType) => {
         await AsyncStorage.setItem('NAME', name);
         await AsyncStorage.setItem('EMAIL', email);
         await AsyncStorage.setItem('USERID', userId);
-        navigation.navigate('UserMain');
+
+        if (userType === 1) {
+            navigation.navigate('UserMain');
+        } else if (userType === 2) {
+            navigation.navigate('SecurityMain');
+        }
     };
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Login</Text>

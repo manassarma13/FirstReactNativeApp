@@ -8,14 +8,18 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import CheckBox from '@react-native-community/checkbox'
 import firestore from '@react-native-firebase/firestore';
 import uuid from 'react-native-uuid';
+import { ScrollView } from 'react-native-gesture-handler';
 const Signup = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isSelected, setSelection] = useState(false);
+    const [selectedRadio, setSelectedRadio] = useState('');
     const navigation = useNavigation();
 
     const registerUser = () => {
@@ -29,6 +33,7 @@ const Signup = () => {
                 password: password,
                 mobile: mobile,
                 userId: userId,
+                userType: selectedRadio
             })
             .then(res => {
                 console.log('user created ');
@@ -61,7 +66,7 @@ const Signup = () => {
         return isValid;
     };
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Text style={styles.title}>Sign Up</Text>
             <TextInput
                 placeholder="Enter Name"
@@ -94,7 +99,38 @@ const Signup = () => {
                 value={confirmPassword}
                 onChangeText={txt => setConfirmPassword(txt)}
             />
+
+            <View style={styles.radioMain}>
+                <TouchableOpacity onPress={()=>{setSelectedRadio(1)}}>
+                    <View style={styles.radioWrapper}>
+                        <View style={styles.radioCircle}>
+                            {selectedRadio === 1? <View style={styles.radioCircleBg}></View> : null}
+                        </View>
+                        <Text style={styles.radioText}>Tenant</Text>
+                    </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setSelectedRadio(2)}}>
+                    <View style={styles.radioWrapper}>
+                        <View style={styles.radioCircle}>
+                            {selectedRadio === 2? <View style={styles.radioCircleBg}></View> : null}
+                        </View>
+                        <Text style={styles.radioText}>Security Guard</Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
+
+            <View style={{ flexDirection: 'row', marginTop: 20, marginLeft: 40 }}>
+                <CheckBox
+                    value={isSelected}
+                    onValueChange={setSelection}
+                    style={{ alignSelf: 'center' }}
+                />
+                <Text style={{ alignSelf: 'center' }}>I agree to the </Text>
+                <Text style={{ alignSelf: 'center', color: 'blue' }}>Terms and Conditions</Text>
+            </View>
+
             <TouchableOpacity
+                disabled={!isSelected}
                 style={styles.btn}
                 onPress={() => {
                     if (validate()) {
@@ -112,7 +148,7 @@ const Signup = () => {
                 }}>
                 Or Login
             </Text>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -146,7 +182,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 50,
-        backgroundColor: 'purple',
+        backgroundColor: 'black',
     },
     btnText: {
         color: 'white',
@@ -154,10 +190,40 @@ const styles = StyleSheet.create({
     },
     orLogin: {
         alignSelf: 'center',
-        marginTop: 50,
+        marginTop:10,
         fontSize: 20,
         textDecorationLine: 'underline',
         fontWeight: '600',
         color: 'black',
     },
+    radioMain:{
+        flex:1,
+        alignItems:'flex-start',
+        justifyContent:'center',
+        marginTop: 10,
+        marginLeft: 20
+
+    },
+    radioText:{
+        fontSize:20
+    },
+    radioCircle:{
+        height:15,
+        width:15,
+        borderRadius:8,
+        borderColor: "black",
+        borderWidth:2,
+        marginTop:5
+    },
+    radioWrapper:{
+        flexDirection:'row',
+        gap: 5
+    },
+    radioCircleBg:{
+        backgroundColor:'black',
+        height: 7,
+        width: 7,
+        borderRadius: 4,
+        margin: 2
+    }
 });
