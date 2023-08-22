@@ -11,9 +11,7 @@ const UserMain = () => {
 	const [incomingGuestData, setIncomingGuestData] = useState(null);
 
 	const handleUserResponse = (response) => {
-		// Here you can update Firestore or perform any desired action
 		console.log('User response:', response);
-		// You can also reset the incoming guest data after the response
 		setIncomingGuestData(null);
 	};
 
@@ -30,7 +28,6 @@ const UserMain = () => {
 			message: message,
 		})
 			.then(() => {
-				// Add your Firebase logic here
 				firestore()
 					.collection('Codes')
 					.add({ code: randomNumber, selectedApartment: selectedApartmentState })
