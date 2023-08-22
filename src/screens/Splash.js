@@ -15,7 +15,14 @@ const Splash = () => {
 	const checkLogin = async () => {
 		const id = await AsyncStorage.getItem('USERID');
 		if (id !== null) {
-			navigation.navigate('Main');
+			const uType = await AsyncStorage.getItem('USERTYPE');
+			console.log(id, "UTYPE")
+			if(uType === '1'){
+				navigation.navigate('UserMain');
+			} else {
+				navigation.navigate('SecurityMain');
+			}
+			
 		} else {
 			navigation.navigate('Login');
 		}

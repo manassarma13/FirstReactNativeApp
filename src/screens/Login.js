@@ -30,14 +30,17 @@ const Login = () => {
                 if (!res.empty) {
                     console.log('User found!');
                     const userData = res.docs[0].data();
+                    console.log(userData.selectedApartment);
                     goToNext(
                         userData.name,
                         userData.email,
                         userData.userId,
-                        userData.userType
+                        userData.userType,
+                        userData.selectedApartment,
+                        userData.flatID
                     );
                 } else {
-                    Alert.alert('User not found. Bummer, dude!');
+                    Alert.alert('User not found!');
                 }
             })
             .catch(error => {
@@ -47,18 +50,20 @@ const Login = () => {
             });
     };
 
-    const goToNext = async (name, email, userId, userType) => {
+    const goToNext = async (name, email, userId, userType, selectedApartment, flatID) => {
         await AsyncStorage.setItem('NAME', name);
         await AsyncStorage.setItem('EMAIL', email);
         await AsyncStorage.setItem('USERID', userId);
+        await AsyncStorage.setItem('USERTYPE', userType.toString());
+        await AsyncStorage.setItem('SELECTEDAPARTMENT', selectedApartment);
+        if (flatID) { await AsyncStorage.setItem('FLATID', flatID); }
 
-        if (userType === 1) {
+        if (userType == 1) {
             navigation.navigate('UserMain');
-        } else if (userType === 2) {
+        } else if (userType == 2) {
             navigation.navigate('SecurityMain');
         }
     };
-
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Login</Text>
