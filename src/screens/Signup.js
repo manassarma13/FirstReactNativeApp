@@ -28,24 +28,6 @@ const fetchApartments = async () => {
     return apartmentNameArray;
 };
 
-// const fetchFlats = async () => {
-//     const querySnapshot = await firestore().collection('apartments').get();
-//     const apartmentNameArray = [];
-
-//     querySnapshot.forEach(documentSnapshot => {
-//         const apartmentData = documentSnapshot.data() || {};
-//         const apartmentNameL = apartmentData.apartmentName || '';
-//         apartmentNameArray.push(apartmentNameL);
-//     });
-
-//     return apartmentNameArray;
-// };
-
-//fetchFlats
-//get index of selected Apartment
-//set the index value to the Apartment
-//
-
 const Signup = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -96,22 +78,6 @@ const Signup = () => {
         setSelectedFlat(selectedFlat);
     };
 
-    // const handleRadioChange = (userType) => {
-    //     setSelectedRadio(userType);
-    //     // Clear selected apartment and flatArray when changing user type
-    //     setSelectedApartment('');
-    //     setFlatArray([]);
-    // };
-
-    // useEffect(() => {
-    //     const getApartment = async () => {
-    //         const apartmentNames = await fetchApartments();
-    //         setApartmentName(apartmentNames);
-    //         setIsLoaded(true);
-    //     };
-
-    //     getApartment();
-    // }, []);
 
     useEffect(() => {
         const fetchApartments = async () => {
@@ -195,16 +161,6 @@ const Signup = () => {
                 value={confirmPassword}
                 onChangeText={txt => setConfirmPassword(txt)}
             />
-            {/* {isLoaded&& <View style={[styles.pickerApartment, { marginTop: 20 }]}>
-                <Picker
-                    selectedValue={selectedApartment}
-                    onValueChange={handleApartmentChange}>
-                    <Picker.Item label="--- Select Apartment ---" value="" />
-                    {apartmentName.map((apartmentName, index) => (
-                        <Picker.Item key={index} label={apartmentName} value={apartmentName} />
-                    ))}
-                </Picker>
-            </View>} */}
             {isLoaded && <View style={[styles.pickerApartment, { marginTop: 20 }]}>
                 <Picker
                     selectedValue={selectedApartment}

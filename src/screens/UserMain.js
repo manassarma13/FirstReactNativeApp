@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Share } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Loader from '../components/Loader';
 
 const UserMain = () => {
 	const [randomNumber, setRandomNumber] = useState(null);
@@ -9,10 +10,12 @@ const UserMain = () => {
 	const [selectedApartmentState, setSelectedApartmentState] = useState('');
 	const [selectedFlat, setSelectedFlat] = useState('');
 	const [incomingGuestData, setIncomingGuestData] = useState(null);
+	const [isLoading, setIsLoading] = useState(true);
 
 	const handleUserResponse = (response) => {
 		console.log('User response:', response);
 		setIncomingGuestData(null);
+		
 	};
 
 	const generateRandomNumber = () => {
@@ -65,6 +68,7 @@ const UserMain = () => {
 		getSelectedApartment();
 	}, []);
 
+	console.log(incomingGuestData);
 	useEffect(() => {
 		const fetchIncomingGuestData = async () => {
 			try {
@@ -78,8 +82,8 @@ const UserMain = () => {
 						const myData = myDataDoc.data();
 						const guestData = myData.formData || {};
 
-						console.log(guestData, "hello")
 						setIncomingGuestData(guestData);
+						setIsLoading(false);
 					}
 				
 			} catch (error) {
@@ -88,6 +92,7 @@ const UserMain = () => {
 		};
 
 		fetchIncomingGuestData();
+		setIsLoading(false);
 	}, []);
 
 	return (
@@ -107,7 +112,7 @@ const UserMain = () => {
 					<Text style={styles.shareButtonText}>Share</Text>
 				</TouchableOpacity>
 			)}
-			{incomingGuestData && (
+			{isLoading ? <Loader visible= {true} /> :(incomingGuestData && (
 				<View style={styles.incomingGuestContainer}>
 					<Text style={styles.incomingGuestText}>Incoming Guest:</Text>
 					<Text>Name: {incomingGuestData.guestName}</Text>
@@ -123,7 +128,7 @@ const UserMain = () => {
 						</TouchableOpacity>
 					</View>
 				</View>
-			)}
+			))}
 		</View>
 	);
 };

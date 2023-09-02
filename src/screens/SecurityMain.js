@@ -32,20 +32,20 @@ const SecurityMain = () => {
 
                     if (codeData.selectedApartment === localApartmentData) {
                         filteredCodes.push(codeData.code);
+                        console.log(codeData.selectedApartment, localApartmentData)
+                        setNumberArrayL(filteredCodes);
                     }
                 });
 
                 console.log(filteredCodes, "Selected OTPs");
                 console.log(allCodes, "All available OTPs");
-
-                setNumberArrayL(filteredCodes);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
 
     fetchData();
-}, []);
+}, [localApartmentData]);
 
 
     useEffect(() => {
