@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,14 +9,36 @@ const SecurityMain = () => {
     const [isCodeCorrect, setIsCodeCorrect] = useState(null);
     const [numberArrayL, setNumberArrayL] = useState(null);
     const [localApartmentData, setLocalApartmentData] = useState(null);
-    const [guestName,setGuestName] = useState("");
+    const [guestName, setGuestName] = useState("");
     const [guestPhone, setGuestPhone] = useState("");
     const [guestPurpose, setGuestPurpose] = useState("");
     const [guestFlat, setGuestFlat] = useState("");
+    const [resultData, setResultData] = useState([]);
 
     const handleInputCode = (code) => {
         setEnteredCode(Number(code));
     }
+
+    useEffect(() => {
+        const fetchResultData = async () => {
+            try {
+                const unsubscribe = firestore().collection('result').onSnapshot((querySnapshot) => {
+                    const updatedResultData = [];
+                    querySnapshot.forEach((doc) => {
+                        const result = doc.data();
+                        updatedResultData.push(result);
+                    });
+                    setResultData(updatedResultData);
+                });
+                return unsubscribe;
+            } catch (error) {
+                console.error('Error fetching result data:', error);
+            }
+        };
+
+        fetchResultData();
+    }, []);
+
 
     useEffect(() => {
 
@@ -44,8 +66,8 @@ const SecurityMain = () => {
             }
         };
 
-    fetchData();
-}, [localApartmentData]);
+        fetchData();
+    }, [localApartmentData]);
 
 
     useEffect(() => {
@@ -65,27 +87,37 @@ const SecurityMain = () => {
         };
         getSelectedApartment();
     }, []);
-
+    const filteredResultData = resultData.filter(item => !item.handled);
+    
+    const handleOkayButtonPress = async (itemName) => {
+        try {
+            const docRef = firestore().collection('result').doc(itemName);
+            await docRef.update({ handled: true });
+            console.log(`Item ${itemName} marked as handled.`);
+        } catch (error) {
+            console.error('Error marking item as handled:', error);
+        }
+    };
     const handleVerifyCode = async () => {
         if (numberArrayL.includes(enteredCode)) {
-                console.log("Allow");
-                setIsCodeCorrect(true);
-                try {
-                    const snapshot = await firestore().collection('Codes').where('code', '==', enteredCode).get();
-                    snapshot.forEach(doc => {
-                        doc.ref.delete();
-                        console.log('Document deleted:', doc.id);
-                    });
-                } catch (error) {
-                    console.error('Error deleting document:', error);
-                }
-            } else {
-                setIsCodeCorrect(false);
-                console.log("Reject");
+            console.log("Allow");
+            setIsCodeCorrect(true);
+            try {
+                const snapshot = await firestore().collection('Codes').where('code', '==', enteredCode).get();
+                snapshot.forEach(doc => {
+                    doc.ref.delete();
+                    console.log('Document deleted:', doc.id);
+                });
+            } catch (error) {
+                console.error('Error deleting document:', error);
             }
+        } else {
+            setIsCodeCorrect(false);
+            console.log("Reject");
+        }
     };
 
-    const sendVisitorRequest  = async () => {
+    const sendVisitorRequest = async () => {
         try {
             const residentDataSnapshot = await firestore().collection('users')
                 .where('flatID', '==', guestFlat)
@@ -104,11 +136,8 @@ const SecurityMain = () => {
 
                 residentData.formData = formData;
 
-                // Update the Firestore document with the new data
                 await residentDoc.ref.update({ formData });
 
-                // Here you can implement the communication logic to send the form data to the resident
-                // For example, you can send an SMS or email to the resident with the form details.
 
                 console.log('Form data sent to resident and saved in the Firestore document:', residentData);
             } else {
@@ -143,7 +172,7 @@ const SecurityMain = () => {
                 </View>
             )}
             <View>
-                <Text style={{ fontSize: 20, marginTop: "20%", marginLeft: "15%", fontWeight: 'bold', color:"black"}}> Incoming Request </Text>
+                <Text style={{ fontSize: 20, marginTop: "20%", marginLeft: "15%", fontWeight: 'bold', color: "black" }}> Incoming Request </Text>
                 <TextInput
                     placeholder="Enter Guest Name"
                     style={[styles.inputForm, { marginTop: 20 }]}
@@ -177,6 +206,30 @@ const SecurityMain = () => {
                 </TouchableOpacity>
 
             </View>
+            {filteredResultData.length > 0 && (
+                <Text style={{ fontSize: 20, marginTop: '5%', fontWeight: 'bold', color: 'black' }}>
+                    Incoming Requests
+                </Text>
+            )}
+            <FlatList
+                data={filteredResultData}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                    <View style={styles.resultItemContainer}>
+                        <Text style={[styles.resultText, { color: item.response === 'Accepted' ? 'green' : 'red' }]}>
+                            {item.name} - {item.response}
+                        </Text>
+                        {!item.handled && (
+                            <TouchableOpacity
+                                style={styles.okayButton}
+                                onPress={() => handleOkayButtonPress(item.name)}
+                            >
+                                <Text style={styles.okayButtonText}>Okay</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                )}
+            />
         </View>
     );
 };
@@ -259,5 +312,25 @@ const styles = StyleSheet.create({
     sendButtonText: {
         color: 'white',
         fontSize: 16,
+    },
+    resultItemContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginVertical: 10,
+    },
+    resultText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    okayButton: {
+        backgroundColor: 'blue',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 5,
+    },
+    okayButtonText: {
+        color: 'white',
+        fontSize: 12,
     },
 });

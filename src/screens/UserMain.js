@@ -11,12 +11,7 @@ const UserMain = () => {
 	const [selectedFlat, setSelectedFlat] = useState('');
 	const [incomingGuestData, setIncomingGuestData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
-
-	const handleUserResponse = (response) => {
-		console.log('User response:', response);
-		setIncomingGuestData(null);
-		
-	};
+	const [shouldWait, setShouldWait] = useState(true);
 
 	const generateRandomNumber = () => {
 		const randomNum = Math.floor(100000 + Math.random() * 900000);
@@ -68,32 +63,84 @@ const UserMain = () => {
 		getSelectedApartment();
 	}, []);
 
-	console.log(incomingGuestData);
-	useEffect(() => {
-		const fetchIncomingGuestData = async () => {
-			try {
-				const guestDataSnapshot = await firestore().collection('users')
-					.where('flatID', '==', selectedFlat)
-					.where('selectedApartment', '==', selectedApartmentState)
-					.get();
+	const handleUserResponse = async (response) => {
+		try {
+			const selectedApartmentL = await AsyncStorage.getItem('SELECTEDAPARTMENT');
+			const selectedFlat = await AsyncStorage.getItem('FLATID') || '';
+			console.log('User response:', response);
 
-				if (!guestDataSnapshot.empty){
-						const myDataDoc = guestDataSnapshot.docs[0];
-						const myData = myDataDoc.data();
-						const guestData = myData.formData || {};
+			// Create a new collection named 'result' with the response, name, and timestamp
+			const db = firestore();
+			const resultCollectionRef = db.collection('result');
+			const timestamp = firestore.FieldValue.serverTimestamp(); // Get server timestamp
 
-						setIncomingGuestData(guestData);
-						setIsLoading(false);
-					}
-				
-			} catch (error) {
-				console.error('Error fetching incoming guest data:', error);
+			await resultCollectionRef.doc(incomingGuestData.guestName).set({
+				name: incomingGuestData.guestName,
+				response: response === 'accept' ? 'Accepted' : 'Denied',
+				timestamp: timestamp,
+				apartmentName: selectedApartmentL
+			});
+
+			console.log('Added response, name, and timestamp to the "result" collection');
+
+			// Remove the 'formData' field from the document
+			const querySnapshot = await db
+				.collection('users')
+				.where('flatID', '==', selectedFlat)
+				.where('selectedApartment', '==', selectedApartmentL)
+				.get();
+
+			if (!querySnapshot.empty) {
+				const documentRef = querySnapshot.docs[0].ref;
+				await documentRef.update({
+					formData: firestore.FieldValue.delete(),
+				});
+
+				console.log('Removed formData from the Firestore document');
+				setIncomingGuestData(null);
 			}
-		};
+		} catch (error) {
+			console.error('Error handling user response:', error.message);
+		}
+	};
 
-		fetchIncomingGuestData();
-		setIsLoading(false);
+	console.log(incomingGuestData);
+	const fetchIncomingGuestData = async () => {
+		try {
+			const guestDataSnapshot = await firestore().collection('users')
+				.where('flatID', '==', selectedFlat)
+				.where('selectedApartment', '==', selectedApartmentState)
+				.get();
+
+			if (!guestDataSnapshot.empty) {
+				const myDataDoc = guestDataSnapshot.docs[0];
+				const myData = myDataDoc.data();
+				const guestData = myData.formData || {};
+
+				setIncomingGuestData(guestData);
+			}
+
+			setIsLoading(false);
+		} catch (error) {
+			console.error('Error fetching incoming guest data:', error);
+		}
+	};
+
+	useEffect(() => {
+		// Wait for 2 seconds before fetching data
+		const delay = setTimeout(() => {
+			setShouldWait(false);
+		}, 2000);
+
+		// Cleanup the timeout to avoid memory leaks
+		return () => clearTimeout(delay);
 	}, []);
+
+	useEffect(() => {
+		if (!shouldWait) {
+			fetchIncomingGuestData();
+		}
+	}, [shouldWait]);
 
 	return (
 		<View style={styles.container}>
@@ -112,7 +159,9 @@ const UserMain = () => {
 					<Text style={styles.shareButtonText}>Share</Text>
 				</TouchableOpacity>
 			)}
-			{isLoading ? <Loader visible= {true} /> :(incomingGuestData && (
+			{shouldWait ? (
+				<Text>Loading...</Text>
+			) : (incomingGuestData && Object.keys(incomingGuestData).length > 0 && (
 				<View style={styles.incomingGuestContainer}>
 					<Text style={styles.incomingGuestText}>Incoming Guest:</Text>
 					<Text>Name: {incomingGuestData.guestName}</Text>
